@@ -50,7 +50,7 @@ for images_dir in dirs:
     new_images_by_model = OrderedDict()
     n_layers = 6
     for model_name in images_by_model:
-        files = sorted(images_by_model[model_name])[::-1]
+        files = sorted(images_by_model[model_name])
         accs = ' -> '.join([re.search(r'acc=(\d+)', file).group(1) for file in files])
         # accs = '\t Accuracy Transition: ' + accs
         # model_name = f'{{{model_name}}}' + accs
@@ -119,12 +119,14 @@ for images_dir in dirs:
 
         model_name =       \
     f'''
-    Type:        "{pe_type}" + "{residual_mode}"
+    Positional Encoding:        "{pe_type}" 
+    Residual Removal: "{residual_mode}"
     Layerwise PE:       {has_lwp} 
     Layers Affected:        {missing_rc_str}    
     Accuracy Transition: {accs}
     Seed: {seed}
     '''
+        new_images_by_model[model_name] = sorted(files)
 
     #     model_name = \
     # f'''
@@ -134,7 +136,7 @@ for images_dir in dirs:
     # Seed: {seed}
     # '''
         # print(model_name)
-        new_images_by_model[model_name] = sorted(files)[::-1]
+        # new_images_by_model[model_name] = sorted(files)[::-1]
 
     from functools import reduce
     def determine_order(model_name):
@@ -150,7 +152,8 @@ for images_dir in dirs:
         quantity += len(n_list) *100
         # to binary
         print(n_list, quantity)
-        return quantity
+        # return quantity
+        return model_name.replace(match_str, str(quantity))
 
     new_images_by_model = OrderedDict(sorted(new_images_by_model.items(), key=lambda x: determine_order(x[0]))) 
 
@@ -228,6 +231,11 @@ for images_dir in dirs:
     </head>
     <body>
         <h1>{vistype}</h1>
+        <h3>Each row shows the accuracy transition from the untrained model to the trained model.</h3>
+        <h3>Each image shows the self-cosine similarity matrix of the model at a certain training step.</h3>
+        <h3>The self-cosine-similarity matrix for the output of a layer of the model is computed as the cosine similarity between the embeddings at different positions.</h3>
+        <h3>For a self-cosine-similarity matrix M, the element M[i, j] is the cosine similarity between the embeddings at position i and j.</h3>
+        <h3>Each row shows the self-cosine similarity matrix of a certain model at its initialization, the middle of training, and the end of training.</h3>
         <div id="gallery"></div>
         {script_content}
     </body>
